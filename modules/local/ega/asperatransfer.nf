@@ -19,12 +19,12 @@ process EGA_ASPERATRANSFER {
     }
 
     input:
-    tuple val(meta), path(md5), path(gpg)
+    tuple val(meta), path(gpgs)
     val(pass)
     val(box)
 
     output:
-    tuple val(meta), path("*.log"), emit: bam
+    tuple val(meta), path("*.log"), emit: log
     path "*.version.txt"          , emit: version
 
     script:
@@ -37,12 +37,13 @@ process EGA_ASPERATRANSFER {
 
     echo \$(ascp --version 2>&1) | sed 's/^.*ascp version //; s/ Operating.*\$//' > ${software}.version.txt
     """
-    
-    script:
+
+    stub:
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    touch  ${meta.id}.log
+    echo $pass > ${meta.id}.log
+    echo $box >> ${meta.id}.log
     echo \$(ascp --version 2>&1) | sed 's/^.*ascp version //; s/ Operating.*\$//' > ${software}.version.txt
     """
 }

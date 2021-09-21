@@ -11,7 +11,9 @@
             "fa_icon": "fas fa-terminal",
             "description": "Define where the pipeline should find input data and save output data.",
             "required": [
-                "input"
+                "input",
+                "pass",
+                "ega_box"
             ],
             "properties": {
                 "input": {
@@ -23,6 +25,15 @@
                     "description": "Path to comma-separated file containing information about the samples in the experiment.",
                     "help_text": "You will need to create a design file with information about the samples in your experiment before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row. See [usage docs](https://nf-co.re/egatransfer/usage#samplesheet-input).",
                     "fa_icon": "fas fa-file-csv"
+                },
+                "pass": {
+                    "type": "string",
+                    "description": "ega password",
+                    "fa_icon": "fas fa-chess-rook"
+                },
+                "ega_box": {
+                    "type": "string",
+                    "fa_icon": "fas fa-box"
                 },
                 "outdir": {
                     "type": "string",

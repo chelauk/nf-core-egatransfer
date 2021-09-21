@@ -16,7 +16,8 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 
 // Check mandatory parameters
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
-
+if (!params.pass) { exit 1, 'ega password not specified'}
+if (!params.ega_box)  { exit 1, 'ega box not specified'}
 /*
 ========================================================================================
     CONFIG FILES
@@ -53,16 +54,16 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( opti
 
 def multiqc_options     = modules['multiqc']
 multiqc_options.args   += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
-def transfer_options    = modules['multiqc']
-//def egacryptor_options  = modules['egacryptor']
-//def aspera_options      = modules['aspera']
+def transfer_options    = modules['transfer']
+def egacryptor_options  = modules['encrypt']
+def aspera_options      = modules['aspera']
 //
 // MODULE: Installed directly from nf-core/modules
 //
 include { MULTIQC } from '../modules/nf-core/modules/multiqc/main' addParams( options: multiqc_options   )
-include { ALMA_TRANSFER } from '../modules/local/alma/transfer'    addParams( options: transfer_options  )
-//include { EGA_CRYPTOR } from '../modules/local/ega/egacryptor'     addParams( options: egacryptor_options )
-//include { EGA_ASPERATRANSFER } from '../modules/local/ega/asperatransfer.nf' addParams( options: aspera_options )
+include { ALMA_TRANSFER } from '../modules/local/rsync/transfer'    addParams( options: transfer_options  )
+include { EGA_ENCRYPTOR } from '../modules/local/ega/encryptor'     addParams( options: egacryptor_options )
+include { EGA_ASPERATRANSFER } from '../modules/local/ega/asperatransfer.nf' addParams( options: aspera_options )
 
 /*
 ========================================================================================
@@ -93,20 +94,23 @@ workflow EGATRANSFER {
     ch_software_versions = ch_software_versions.mix(ALMA_TRANSFER.out.version.first().ifEmpty(null))
 
     //
-    // MODULE: Run EGA_CRYPTOR
+    // MODULE: Run EGA_ENCRYPTOR
     //
-  //  EGA_CRYPTOR (
-  //      ALMA_TRANSFER.out.bams
-  //  )
-  //  ch_software_versions = ch_software_versions.mix(EGA_CRYPTOR.out.version.first().ifEmpty(null))
+
+    EGA_ENCRYPTOR (
+        ALMA_TRANSFER.out.bams
+    )
+    ch_software_versions = ch_software_versions.mix(EGA_ENCRYPTOR.out.version.first().ifEmpty(null))
 
     //
     // MODULE: Run EGA_ASPERATRANSFER
     //
-    //EGA_ASPERATRANSFER (
-    //    EGA_CRYPTOR.out.gpg
-   // )
-   // ch_software_versions = ch_software_versions.mix(EGA_ASPERATRANSFER.out.version.first().ifEmpty(null))
+    EGA_ASPERATRANSFER (
+        EGA_ENCRYPTOR.out.gpgs,
+        params.pass,
+        params.ega_box
+    )
+    ch_software_versions = ch_software_versions.mix(EGA_ASPERATRANSFER.out.version.first().ifEmpty(null))
     //
     // MODULE: Pipeline reporting
     //

@@ -1,9 +1,11 @@
 // Import generic module functions
 include { initOptions; saveFiles; getSoftwareName } from '../functions'
-
-process EGA_EGACRYPTOR {
+params.options = [:]
+options        = initOptions(params.options)
+process ALMA_TRANSFER {
     tag "$meta.id"
-    label 'process_high'
+    queue "data-transfer"
+	label 'transfer'
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
@@ -16,30 +18,26 @@ process EGA_EGACRYPTOR {
     }
 
     input:
-    tuple val(meta), path(bam)
+    tuple val(meta), file('temp_file')
 
     output:
-    tuple val(meta), path("*.gpg"), path("*.md5") emit: gpg
+    tuple val(meta), path("*.bam"), emit: bams
     path "*.version.txt"          , emit: version
 
     script:
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    java -jar  ~/apps/EGA-Cryptor-2.0.0/ega-cryptor-2.0.0.jar \\
-    -i $bam \\
-    -m \\
-    -o ./
-
-    echo "2.0.0" > ${software}.version.txt
+    rsync $bam .
+    echo \$(rsync --version) | sed 's/^rsync version //; s/ protocol.*\$//' > ${software}.version.txt
     """
-    
-	stub:
+    stub:
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    touch \$(basename $bam).md5
-    touch \$(basename $bam).gpg
-    touch \$(basename $bam).gpg.md5
-	"""
+    bamfile=\$(readlink temp_file | xargs basename)
+    rsync -L temp_file ./\$bamfile
+    echo \$(rsync --version) | sed 's/^rsync version //; s/ protocol.*\$//' > ${software}.version.txt
+    """
+
 }

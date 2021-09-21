@@ -87,7 +87,7 @@ def check_samplesheet(file_in, file_out):
             if not sample:
                 print_error("Sample entry has not been specified!", "Line", line)
 
-            ## Check FastQ file extension
+            ## Check Bam file extension
             for bam_file in [bam]:
                 if bam_file:
                     if bam_file.find(" ") != -1:
@@ -99,16 +99,16 @@ def check_samplesheet(file_in, file_out):
                             line,
                         )
 
-            ## Auto-detect 
-            sample_info = []  ## [single_end, bam]
+            ## Auto-detect
+            # sample_info = []  ## [single_end, bam]
             if sample and bam :  ## Paired-end short reads
-                sample_info = ["0", bam]
+                sample_info = bam
             else:
                 print_error("Invalid combination of columns provided!", "Line", line)
 
             ## Create sample mapping dictionary = { sample: [ single_end, bam ] }
             if sample not in sample_mapping_dict:
-                sample_mapping_dict[sample] = [sample_info]
+                sample_mapping_dict[sample] = sample_info
             else:
                 if sample_info in sample_mapping_dict[sample]:
                     print_error("Samplesheet contains duplicate rows!", "Line", line)
@@ -122,13 +122,9 @@ def check_samplesheet(file_in, file_out):
         with open(file_out, "w") as fout:
             fout.write(",".join(["sample", "bam"]) + "\n")
             for sample in sorted(sample_mapping_dict.keys()):
+                print(sample + "," + sample_mapping_dict[sample])
+                fout.write(sample + "," + sample_mapping_dict[sample] + "\n")
 
-                ## Check that multiple runs of the same sample are of the same datatype
-                if not all(x[0] == sample_mapping_dict[sample][0][0] for x in sample_mapping_dict[sample]):
-                    print_error("Multiple runs of a sample must be of the same datatype!", "Sample: {}".format(sample))
-
-                for idx, val in enumerate(sample_mapping_dict[sample]):
-                    fout.write(",".join(["{}_T{}".format(sample, idx + 1)] + val) + "\n")
     else:
         print_error("No entries to process!", "Samplesheet: {}".format(file_in))
 
