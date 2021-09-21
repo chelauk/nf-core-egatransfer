@@ -11,7 +11,7 @@ WorkflowEgatransfer.initialise(params, log)
 
 // TODO nf-core: Add all file path parameters for the pipeline to the list below
 // Check input path parameters to see if they exist
-def checkPathParamList = [ params.input, params.multiqc_config, params.fasta ]
+def checkPathParamList = [ params.input, params.multiqc_config ]
 for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true) } }
 
 // Check mandatory parameters
@@ -51,14 +51,18 @@ include { INPUT_CHECK } from '../subworkflows/local/input_check' addParams( opti
 ========================================================================================
 */
 
-def multiqc_options   = modules['multiqc']
-multiqc_options.args += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
-
+def multiqc_options     = modules['multiqc']
+multiqc_options.args   += params.multiqc_title ? Utils.joinModuleArgs(["--title \"$params.multiqc_title\""]) : ''
+def transfer_options    = modules['multiqc']
+//def egacryptor_options  = modules['egacryptor']
+//def aspera_options      = modules['aspera']
 //
 // MODULE: Installed directly from nf-core/modules
 //
-include { FASTQC  } from '../modules/nf-core/modules/fastqc/main'  addParams( options: modules['fastqc'] )
 include { MULTIQC } from '../modules/nf-core/modules/multiqc/main' addParams( options: multiqc_options   )
+include { ALMA_TRANSFER } from '../modules/local/alma/transfer'    addParams( options: transfer_options  )
+//include { EGA_CRYPTOR } from '../modules/local/ega/egacryptor'     addParams( options: egacryptor_options )
+//include { EGA_ASPERATRANSFER } from '../modules/local/ega/asperatransfer.nf' addParams( options: aspera_options )
 
 /*
 ========================================================================================
@@ -81,13 +85,28 @@ workflow EGATRANSFER {
     )
 
     //
-    // MODULE: Run FastQC
+    // MODULE: Run ALMA_TRANSFER
     //
-    FASTQC (
-        INPUT_CHECK.out.reads
+    ALMA_TRANSFER (
+        INPUT_CHECK.out.bams
     )
-    ch_software_versions = ch_software_versions.mix(FASTQC.out.version.first().ifEmpty(null))
+    ch_software_versions = ch_software_versions.mix(ALMA_TRANSFER.out.version.first().ifEmpty(null))
 
+    //
+    // MODULE: Run EGA_CRYPTOR
+    //
+  //  EGA_CRYPTOR (
+  //      ALMA_TRANSFER.out.bams
+  //  )
+  //  ch_software_versions = ch_software_versions.mix(EGA_CRYPTOR.out.version.first().ifEmpty(null))
+
+    //
+    // MODULE: Run EGA_ASPERATRANSFER
+    //
+    //EGA_ASPERATRANSFER (
+    //    EGA_CRYPTOR.out.gpg
+   // )
+   // ch_software_versions = ch_software_versions.mix(EGA_ASPERATRANSFER.out.version.first().ifEmpty(null))
     //
     // MODULE: Pipeline reporting
     //
@@ -114,7 +133,6 @@ workflow EGATRANSFER {
     ch_multiqc_files = ch_multiqc_files.mix(ch_multiqc_custom_config.collect().ifEmpty([]))
     ch_multiqc_files = ch_multiqc_files.mix(ch_workflow_summary.collectFile(name: 'workflow_summary_mqc.yaml'))
     ch_multiqc_files = ch_multiqc_files.mix(GET_SOFTWARE_VERSIONS.out.yaml.collect())
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]}.ifEmpty([]))
 
     MULTIQC (
         ch_multiqc_files.collect()
