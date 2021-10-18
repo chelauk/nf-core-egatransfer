@@ -21,22 +21,22 @@ process ALMA_TRANSFER {
     tuple val(meta), file('temp_file')
 
     output:
-    tuple val(meta), path("*.ba{m,i}"), emit: files
+    tuple val(meta), path(${*.ba{m,i}"), emit: files
     path "*.version.txt"          , emit: version
 
     script:
     def software = getSoftwareName(task.process)
+    def file     = $temp_file.getBaseName()
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    rsync $bam .
+    rsync -L temp_file $file
     echo \$(rsync --version) | sed 's/^rsync version //; s/ protocol.*\$//' > ${software}.version.txt
     """
     stub:
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    bamfile=\$(readlink temp_file | xargs basename)
-    rsync -L temp_file ./\$bamfile
+    touch file
     echo \$(rsync --version) | sed 's/^rsync version //; s/ protocol.*\$//' > ${software}.version.txt
     """
 
