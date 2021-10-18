@@ -16,7 +16,7 @@ process EGA_ENCRYPTOR {
     }
 
     input:
-    tuple val(meta), path(bams)
+    tuple val(meta), path(files)
 
     output:
     tuple val(meta), path("*.{gpg,md5}"), emit: gpgs
@@ -27,7 +27,7 @@ process EGA_ENCRYPTOR {
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
     java -jar  ~/apps/EGA-Cryptor-2.0.0/ega-cryptor-2.0.0.jar \\
-    -i $bam \\
+    -i $files \\
     -m \\
     -o ./
 
@@ -37,9 +37,9 @@ process EGA_ENCRYPTOR {
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    touch ${bams}.gpg
-    touch ${bams}.md5
-    touch ${bams}.gpg.md5
+    touch ${files}.gpg
+    touch ${files}.md5
+    touch ${files}.gpg.md5
     echo "2.0.0" > ${software}.version.txt
     """
 
