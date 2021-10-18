@@ -21,7 +21,7 @@ process ALMA_TRANSFER {
     tuple val(meta), file('temp_file')
 
     output:
-    tuple val(meta), path("*.bam"), emit: bams
+    tuple val(meta), path("*.ba{m,i}"), emit: files
     path "*.version.txt"          , emit: version
 
     script:

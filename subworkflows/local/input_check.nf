@@ -14,21 +14,21 @@ workflow INPUT_CHECK {
     SAMPLESHEET_CHECK ( samplesheet )
         .splitCsv ( header:true, sep:',' )
         .map { create_bam_channels(it) }
-        .set { bams }
+        .set { files }
 
     emit:
-    bams // channel: [ val(meta), [ bam ] ]
+    files // channel: [ val(meta), [ bam ] ]
 }
 
 // Function to get list of [ meta, [ bam ] ]
 def create_bam_channels(LinkedHashMap row) {
     def meta = [:]
-    meta.id           = row.sample
+    meta.id           = row.sample.toString()
 
     def array = []
-    if (!file(row.bam).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> bam file does not exist!\n${row.bam}"
+    if (!file(row.file).exists()) {
+        exit 1, "ERROR: Please check input samplesheet -> file does not exist!\n${row.bam}"
     }
-        array = [ meta, [file(row.bam)] ]
+        array = [ meta, [file(row.file)] ]
     return array
 }
