@@ -65,8 +65,9 @@ def check_samplesheet(file_in, file_out):
         ## Check sample entries
         for line in fin:
             lspl = [x.strip().strip('"') for x in line.strip().split(",")]
-
+            # print(lspl)
             # Check valid number of columns per row
+            # print("Header length: " + str(len(HEADER)))
             if len(lspl) < len(HEADER):
                 print_error(
                     "Invalid number of columns (minimum = {})!".format(len(HEADER)),
@@ -84,6 +85,7 @@ def check_samplesheet(file_in, file_out):
             ## Check sample name entries
             sample, _files = lspl[: len(HEADER)]
             sample = sample.replace(" ", "_")
+            # print("SAMPLE: " + sample)
             if not sample:
                 print_error("Sample entry has not been specified!", "Line", line)
 
@@ -95,12 +97,14 @@ def check_samplesheet(file_in, file_out):
             ## Auto-detect
             if sample and _file :  ## Paired-end short reads
                 sample_info = _file
+                # print(sample_info)
             else:
                 print_error("Invalid combination of columns provided!", "Line", line)
 
-            ## Create sample mapping dictionary = { sample: [ single_end, file ] }
             if sample not in sample_mapping_dict:
-                sample_mapping_dict[sample] = sample_info
+                sample_mapping_dict[sample] = []
+                sample_mapping_dict[sample].append(sample_info)
+                # print(sample_mapping_dict[sample])
             else:
                 if sample_info in sample_mapping_dict[sample]:
                     print_error("Samplesheet contains duplicate rows!", "Line", line)
@@ -114,8 +118,11 @@ def check_samplesheet(file_in, file_out):
         with open(file_out, "w") as fout:
             fout.write(",".join(["sample", "file"]) + "\n")
             for sample in sorted(sample_mapping_dict.keys()):
-                print(sample + "," + sample_mapping_dict[sample])
-                fout.write(sample + "," + sample_mapping_dict[sample] + "\n")
+                # print("SAMPLE: " + sample)
+                for _file in sample_mapping_dict[sample]:
+                    # print("FILE: " + _file)
+                    print(sample + "," + _file)
+                    fout.write(sample + "," + _file + "\n")
 
     else:
         print_error("No entries to process!", "Samplesheet: {}".format(file_in))
