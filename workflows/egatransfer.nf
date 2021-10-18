@@ -89,7 +89,7 @@ workflow EGATRANSFER {
     // MODULE: Run ALMA_TRANSFER
     //
     ALMA_TRANSFER (
-        INPUT_CHECK.out.bams
+        INPUT_CHECK.out.files
     )
     ch_software_versions = ch_software_versions.mix(ALMA_TRANSFER.out.version.first().ifEmpty(null))
 
@@ -98,7 +98,7 @@ workflow EGATRANSFER {
     //
 
     EGA_ENCRYPTOR (
-        ALMA_TRANSFER.out.bams
+        ALMA_TRANSFER.out.files
     )
     ch_software_versions = ch_software_versions.mix(EGA_ENCRYPTOR.out.version.first().ifEmpty(null))
 
