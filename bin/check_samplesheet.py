@@ -43,8 +43,8 @@ def check_samplesheet(file_in, file_out):
     """
     This function checks that the samplesheet follows the following structure:
 
-    sample,bam
-    SAMPLE,SAMPLE.bam
+    sample,file
+    SAMPLE,SAMPLE.ext
 
     For an example see:
     https://raw.githubusercontent.com/nf-core/test-datasets/viralrecon/samplesheet/samplesheet_test_illumina_amplicon.csv
@@ -56,7 +56,7 @@ def check_samplesheet(file_in, file_out):
         ## Check header
         MIN_COLS = 2
         # TODO nf-core: Update the column names for the input samplesheet
-        HEADER = ["sample", "bam" ]
+        HEADER = ["sample", "file" ]
         header = [x.strip('"') for x in fin.readline().strip().split(",")]
         if header[: len(HEADER)] != HEADER:
             print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(HEADER)))
@@ -82,31 +82,23 @@ def check_samplesheet(file_in, file_out):
                 )
 
             ## Check sample name entries
-            sample, bam = lspl[: len(HEADER)]
+            sample, _files = lspl[: len(HEADER)]
             sample = sample.replace(" ", "_")
             if not sample:
                 print_error("Sample entry has not been specified!", "Line", line)
 
-            ## Check Bam file extension
-            for bam_file in [bam]:
-                if bam_file:
-                    if bam_file.find(" ") != -1:
-                        print_error("bam file contains spaces!", "Line", line)
-                    if not bam_file.endswith(".bam"):
-                        print_error(
-                            "Bam file does not have extension '.bam'!",
-                            "Line",
-                            line,
-                        )
+            ## Check file name
+            for _file in [_files]:
+                if _file.find(" ") != -1:
+                    print_error("file contains spaces!", "Line", line)
 
             ## Auto-detect
-            # sample_info = []  ## [single_end, bam]
-            if sample and bam :  ## Paired-end short reads
-                sample_info = bam
+            if sample and _file :  ## Paired-end short reads
+                sample_info = _file
             else:
                 print_error("Invalid combination of columns provided!", "Line", line)
 
-            ## Create sample mapping dictionary = { sample: [ single_end, bam ] }
+            ## Create sample mapping dictionary = { sample: [ single_end, file ] }
             if sample not in sample_mapping_dict:
                 sample_mapping_dict[sample] = sample_info
             else:
@@ -120,7 +112,7 @@ def check_samplesheet(file_in, file_out):
         out_dir = os.path.dirname(file_out)
         make_dir(out_dir)
         with open(file_out, "w") as fout:
-            fout.write(",".join(["sample", "bam"]) + "\n")
+            fout.write(",".join(["sample", "file"]) + "\n")
             for sample in sorted(sample_mapping_dict.keys()):
                 print(sample + "," + sample_mapping_dict[sample])
                 fout.write(sample + "," + sample_mapping_dict[sample] + "\n")
