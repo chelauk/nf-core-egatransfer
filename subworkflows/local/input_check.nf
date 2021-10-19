@@ -7,13 +7,13 @@ params.options = [:]
 include { SAMPLESHEET_CHECK } from '../../modules/local/samplesheet_check' addParams( options: params.options )
 
 workflow INPUT_CHECK {
-    take:
+	take:
     samplesheet // file: /path/to/samplesheet.csv
 
     main:
     SAMPLESHEET_CHECK ( samplesheet )
         .splitCsv ( header:true, sep:',' )
-        .map { create_bam_channels(it) }
+        .map { create_file_channels(it) }
         .set { files }
 
     emit:
@@ -21,14 +21,13 @@ workflow INPUT_CHECK {
 }
 
 // Function to get list of [ meta, [ bam ] ]
-def create_bam_channels(LinkedHashMap row) {
+def create_file_channels(LinkedHashMap row) {
     def meta = [:]
-    meta.id           = row.sample.toString()
+	meta.sample       = row.sample.toString()
+	meta.type         = row.type.toString()
+    meta.id           = row.sample.toString() + "_" + row.type.toString()
 
     def array = []
-    if (!file(row.file).exists()) {
-        exit 1, "ERROR: Please check input samplesheet -> file does not exist!\n${row.bam}"
-    }
-        array = [ meta, [file(row.file)] ]
+    array = [ meta, [file(row.file)] ]
     return array
 }

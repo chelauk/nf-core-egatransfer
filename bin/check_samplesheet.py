@@ -56,7 +56,7 @@ def check_samplesheet(file_in, file_out):
         ## Check header
         MIN_COLS = 2
         # TODO nf-core: Update the column names for the input samplesheet
-        HEADER = ["sample", "file" ]
+        HEADER = ["sample","type","file" ]
         header = [x.strip('"') for x in fin.readline().strip().split(",")]
         if header[: len(HEADER)] != HEADER:
             print("ERROR: Please check samplesheet header -> {} != {}".format(",".join(header), ",".join(HEADER)))
@@ -83,7 +83,7 @@ def check_samplesheet(file_in, file_out):
                 )
 
             ## Check sample name entries
-            sample, _files = lspl[: len(HEADER)]
+            sample, _type, _files = lspl[: len(HEADER)]
             sample = sample.replace(" ", "_")
             # print("SAMPLE: " + sample)
             if not sample:
@@ -95,8 +95,8 @@ def check_samplesheet(file_in, file_out):
                     print_error("file contains spaces!", "Line", line)
 
             ## Auto-detect
-            if sample and _file :  ## Paired-end short reads
-                sample_info = _file
+            if sample and _type and _file : 
+                sample_info = _type + "," + _file
                 # print(sample_info)
             else:
                 print_error("Invalid combination of columns provided!", "Line", line)
@@ -116,7 +116,7 @@ def check_samplesheet(file_in, file_out):
         out_dir = os.path.dirname(file_out)
         make_dir(out_dir)
         with open(file_out, "w") as fout:
-            fout.write(",".join(["sample", "file"]) + "\n")
+            fout.write(",".join(["sample","type","file"]) + "\n")
             for sample in sorted(sample_mapping_dict.keys()):
                 # print("SAMPLE: " + sample)
                 for _file in sample_mapping_dict[sample]:

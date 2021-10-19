@@ -3,7 +3,11 @@ include { initOptions; saveFiles; getSoftwareName } from '../functions'
 params.options = [:]
 options        = initOptions(params.options)
 process EGA_ENCRYPTOR {
-    tag "$meta.id"
+    executor "slurm"
+	mem      "32.GB"
+	time     "8h"
+
+	tag "$meta.id"
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
@@ -42,5 +46,5 @@ process EGA_ENCRYPTOR {
     touch ${files}.gpg.md5
     echo "2.0.0" > ${software}.version.txt
     """
-
 }
+
