@@ -3,9 +3,9 @@ include { initOptions; saveFiles; getSoftwareName } from '../functions'
 params.options = [:]
 options        = initOptions(params.options)
 process EGA_ENCRYPTOR {
-    executor "slurm"
-	mem      "32.GB"
-	time     "8h"
+    executor    "slurm"
+	memory      "32 GB"
+	time        "12h"
 
 	tag "$meta.id"
     publishDir "${params.outdir}",

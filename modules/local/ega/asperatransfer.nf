@@ -37,7 +37,7 @@ process EGA_ASPERATRANSFER {
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
     ASPERA_SCP_PASS=$pass \\
-    ascp -P33001 -O33001 -QT -l300M -L- ./*{md5,gpg} \\
+    ascp -P33001 -O33001 -k2 -QT -l300M -L- ./*{md5,gpg} \\
     ega-box-${box}@fasp.ega.ebi.ac.uk:/. 2>&1 > ${meta.id}.log
 
     echo \$(ascp --version 2>&1) | sed 's/^.*ascp version //; s/ Operating.*\$//' > ${software}.version.txt
