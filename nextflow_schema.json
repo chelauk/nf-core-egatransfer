@@ -32,7 +32,8 @@
                     "fa_icon": "fas fa-chess-rook"
                 },
                 "ega_box": {
-                    "type": "integer",
+                    "type": "string",
+                    "description": "ega submission box",
                     "fa_icon": "fas fa-box"
                 },
                 "outdir": {
