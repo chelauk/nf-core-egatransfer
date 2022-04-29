@@ -12,7 +12,7 @@ process MULTIQC {
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:[:], publish_by_meta:[]) }
 
-    conda '/home/cjames/.conda/envs/multiqc'
+    conda '/data/scratch/DMP/UCEC/EVGENMOD/cjames/.conda/envs/nf-core'
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://depot.galaxyproject.org/singularity/multiqc:1.11--pyhdfd78af_0"
     } else {

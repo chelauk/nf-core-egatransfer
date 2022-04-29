@@ -4,6 +4,7 @@ params.options = [:]
 options        = initOptions(params.options)
 process EGA_ENCRYPTOR {
     executor    "slurm"
+	queue       "compute"
 	memory      "32 GB"
 	time        "12h"
 
@@ -31,7 +32,7 @@ process EGA_ENCRYPTOR {
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
     java -jar  ~/apps/EGA-Cryptor-2.0.0/ega-cryptor-2.0.0.jar \\
-    -i $files \\
+    -i ${files[0]} \\
     -m \\
     -o ./
 
@@ -41,9 +42,9 @@ process EGA_ENCRYPTOR {
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    touch ${files}.gpg
-    touch ${files}.md5
-    touch ${files}.gpg.md5
+    touch ${files[0]}.gpg
+    touch ${files[0]}.md5
+    touch ${files[0]}.gpg.md5
     echo "2.0.0" > ${software}.version.txt
     """
 }

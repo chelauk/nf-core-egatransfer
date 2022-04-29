@@ -8,7 +8,8 @@ process ALMA_TRANSFER {
 	executor "slurm"
 	memory '2 GB'
 	clusterOptions  "--ntasks=1" 
-    publishDir "${params.outdir}",
+    time "8h"
+	publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
 

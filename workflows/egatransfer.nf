@@ -78,29 +78,30 @@ workflow EGATRANSFER {
 
     ch_software_versions = Channel.empty()
     ch_encryptor         = Channel.empty()
-
-    //
+    input_files          = Channel.empty()
+    
+	
+	//
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     //
-    INPUT_CHECK (
-        ch_input
-    )
+    INPUT_CHECK (ch_input)
+    input_files = input_files.mix(INPUT_CHECK.out.files)
 
-    //
+	//
     // MODULE: Run ALMA_TRANSFER
     //
 
     if ( params.stage == "alma_transfer" ) {
-        ALMA_TRANSFER (INPUT_CHECK.out.files)
+        ALMA_TRANSFER (input_files)
         ch_software_versions = ch_software_versions.mix(ALMA_TRANSFER.out.version.first().ifEmpty(null))
         ch_encryptor = ch_encryptor.mix(ALMA_TRANSFER.out.files())
     }
     //
     // MODULE: Run EGA_ENCRYPTOR
     //
-
-    if ( params.stage == "encrypt") {
-        EGA_ENCRYPTOR ( INPUT_CHECK.out.files)
+    
+	if ( params.stage == "encrypt" ) {
+		EGA_ENCRYPTOR (input_files)
         ch_software_versions = ch_software_versions.mix(EGA_ENCRYPTOR.out.version.first().ifEmpty(null))
     } else {
         EGA_ENCRYPTOR ( ALMA_TRANSFER.out.files )
