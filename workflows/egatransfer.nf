@@ -66,6 +66,7 @@ def aspera_options      = modules['aspera']
 //
 include { MULTIQC } from '../modules/nf-core/modules/multiqc/main' addParams( options: multiqc_options   )
 include { ALMA_TRANSFER } from '../modules/local/rsync/transfer'    addParams( options: transfer_options  )
+include { TRANSFER_AND_RENAME } from '../modules/local/rsync/transfer_and_rename'    addParams( options: transfer_options  )
 include { EGA_ENCRYPTOR } from '../modules/local/ega/encryptor'     addParams( options: egacryptor_options )
 include { EGA_ASPERATRANSFER } from '../modules/local/ega/asperatransfer.nf' addParams( options: aspera_options )
 
