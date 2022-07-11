@@ -112,8 +112,11 @@ workflow EGATRANSFER {
 	if ( params.stage == "encrypt" ) {
 		EGA_ENCRYPTOR (input_files)
         ch_software_versions = ch_software_versions.mix(EGA_ENCRYPTOR.out.version.first().ifEmpty(null))
-    } else {
+    } else if ( params.stage == "alma_transfer" ) {
         EGA_ENCRYPTOR ( ALMA_TRANSFER.out.files )
+        ch_software_versions = ch_software_versions.mix(EGA_ENCRYPTOR.out.version.first().ifEmpty(null))
+    } else if  ( params.stage == "transfer_and_rename")  {
+        EGA_ENCRYPTOR ( TRANSFER_AND_RENAME.out.files )
         ch_software_versions = ch_software_versions.mix(EGA_ENCRYPTOR.out.version.first().ifEmpty(null))
     }
     //
