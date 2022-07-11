@@ -18,6 +18,10 @@ for (param in checkPathParamList) { if (param) { file(param, checkIfExists: true
 if (params.input) { ch_input = file(params.input) } else { exit 1, 'Input samplesheet not specified!' }
 if (!params.pass) { exit 1, 'ega password not specified'}
 if (!params.ega_box)  { exit 1, 'ega box not specified'}
+
+
+// check optional parameters
+idconvert       = params.fasta     ? Channel.fromPath(params.idconvert).collect()     : Channel.empty()
 /*
 ========================================================================================
     CONFIG FILES
@@ -79,8 +83,8 @@ workflow EGATRANSFER {
     ch_software_versions = Channel.empty()
     ch_encryptor         = Channel.empty()
     input_files          = Channel.empty()
-    
-	
+
+
 	//
     // SUBWORKFLOW: Read in samplesheet, validate and stage input files
     //
@@ -96,10 +100,14 @@ workflow EGATRANSFER {
         ch_software_versions = ch_software_versions.mix(ALMA_TRANSFER.out.version.first().ifEmpty(null))
         ch_encryptor = ch_encryptor.mix(ALMA_TRANSFER.out.files())
     }
+
+    if ( params.stage == "transfer_and_rename") {
+        TRANSFER_AND_RENAME (input_files,idconvert)
+    }
     //
     // MODULE: Run EGA_ENCRYPTOR
     //
-    
+
 	if ( params.stage == "encrypt" ) {
 		EGA_ENCRYPTOR (input_files)
         ch_software_versions = ch_software_versions.mix(EGA_ENCRYPTOR.out.version.first().ifEmpty(null))
