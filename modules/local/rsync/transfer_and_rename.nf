@@ -25,8 +25,20 @@ process TRANSFER_AND_RENAME {
     def software = getSoftwareName(task.process)
     def prefix   = options.suffix ? "${meta.id}${options.suffix}" : "${meta.id}"
     """
-    _file=\$(readlink $temp_file | xargs basename)
-    rsync -L $temp_file \$_file
+    file=\$(readlink $temp_file | xargs basename)
+
+    patient="\$(cut -d'_' -f1 <<< \$file)"
+
+    while IFS=, read -r new old
+        do if [ \$patient == \$old ]
+    then new2=\$new
+        fi
+    done < ID_Conversion.csv
+
+    newfilename=`echo \$file | sed "s/\$patient/\$new2/"`
+
+    samtools view -h \$file | sed "s/\$patient/\$new2/g" | samtools view -hb - > "\$newfilename"
+
     echo \$(rsync --version) | sed 's/^rsync version //; s/ protocol.*\$//' > ${software}.version.txt
     """
     stub:
