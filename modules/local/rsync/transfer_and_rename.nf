@@ -4,9 +4,6 @@ params.options = [:]
 options        = initOptions(params.options)
 process TRANSFER_AND_RENAME {
     tag "$meta.id"
-    memory '16 GB'
-    clusterOptions  "--ntasks=1"
-    time "8h"
     publishDir "${params.outdir}",
         mode: params.publish_dir_mode,
         saveAs: { filename -> saveFiles(filename:filename, options:params.options, publish_dir:getSoftwareName(task.process), meta:meta, publish_by_meta:['id']) }
@@ -21,7 +18,7 @@ process TRANSFER_AND_RENAME {
     path(idconvert)
 
     output:
-    tuple val(meta), path("${meta.sample}*"), emit: files
+    tuple val(meta), path("F*bam"), emit: files
     path "*.version.txt"          , emit: version
 
     script:
@@ -38,16 +35,16 @@ process TRANSFER_AND_RENAME {
     """
     file=\$(readlink $temp_file | xargs basename)
 
-    ​patient="\$(cut -d'_' -f1 <<< \$file)"
-​
+    patient="\$(cut -d'_' -f1 <<< \$file)"
+
     while IFS=, read -r new old
         do if [ \$patient == \$old ]
     then new2=\$new
         fi
-    done < \$ID_Conversion.csv
-​
+    done < ID_Conversion.csv
+
     newfilename=`echo \$file | sed "s/\$patient/\$new2/"`
-​
+
     # on samtools view -h \$file | sed "s/\$patient/\$new2/g" | samtools view -hb - > "\$newfilename"
     touch \$newfilename
     echo \$(rsync --version) | sed 's/^rsync version //; s/ protocol.*\$//' > ${software}.version.txt
