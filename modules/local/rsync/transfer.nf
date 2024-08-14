@@ -4,10 +4,9 @@ params.options = [:]
 options        = initOptions(params.options)
 process ALMA_TRANSFER {
     tag "$meta.id"
-    queue "data-transfer"
-	executor "slurm"
-	memory '2 GB'
-	clusterOptions  "--ntasks=1" 
+    executor "slurm"
+    memory '2 GB'
+    clusterOptions  "--ntasks=1" 
     time "8h"
 	publishDir "${params.outdir}",
         mode: params.publish_dir_mode,

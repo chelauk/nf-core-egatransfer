@@ -6,7 +6,6 @@ options        = initOptions(params.options)
 
 process EGA_ASPERATRANSFER {
     executor "slurm"
-    queue "data-transfer"
 	executor "slurm"
 	memory '2 GB'
 	clusterOptions  "--ntasks=1"

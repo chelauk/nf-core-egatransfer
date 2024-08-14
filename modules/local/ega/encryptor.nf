@@ -4,7 +4,6 @@ params.options = [:]
 options        = initOptions(params.options)
 process EGA_ENCRYPTOR {
     executor    "slurm"
-	queue       "compute"
 	memory      "32 GB"
 	time        "12h"
 

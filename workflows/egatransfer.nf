@@ -94,7 +94,7 @@ workflow EGATRANSFER {
     if ( params.stage == "alma_transfer" ) {
         ALMA_TRANSFER (input_files)
         ch_software_versions = ch_software_versions.mix(ALMA_TRANSFER.out.version.first().ifEmpty(null))
-        ch_encryptor = ch_encryptor.mix(ALMA_TRANSFER.out.files())
+        ch_encryptor = ch_encryptor.mix(ALMA_TRANSFER.out.files)
     }
     //
     // MODULE: Run EGA_ENCRYPTOR

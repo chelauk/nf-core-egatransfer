@@ -4,7 +4,7 @@ include { saveFiles } from './functions'
 params.options = [:]
 
 process SAMPLESHEET_CHECK {
-	queue 'data-transfer'
+
 	clusterOptions = '--ntasks=1'
     memory '1 GB'
 	time   '10m'
